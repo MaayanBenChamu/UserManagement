@@ -1,0 +1,286 @@
+<html>
+  <header>
+    <title>Web First Project</title>
+    <link rel="stylesheet" href="style.css" />
+  </header>
+  <body onload="getUseras()">
+    <span>Search</span> <input onkeyup="search() " type="text" id="search" />
+    <div id="usersContainer"></div>
+    <script>
+      function search() {
+        const search = document.getElementById("search").value;
+
+        const divAll = document.getElementsByClassName(`CssDiv`);
+        const usersData = [];
+        Array.from(divAll).forEach((d) => {
+          usersData.push(JSON.parse(d.dataset.stellarRatio));
+          d.style.display = "none";
+        });
+        usersData.forEach((u) => {
+          if (u.name.includes(search) || u.email.includes(search)) {
+            Array.from(divAll).forEach((d) => {
+              if (d.id == u.id) {
+                d.style.display = "block";
+              }
+            });
+          }
+        });
+      }
+
+      let i = 1;
+
+      async function getUseras() {
+        const midData = await fetch(
+          "https://jsonplaceholder.typicode.com/users"
+        );
+
+        if (midData.ok) {
+          const usersArr = await midData.json();
+
+          usersArr.forEach((user) => {
+            const mainContainer = document.getElementById("usersContainer");
+            // _Create Elements_
+
+            // Containers:
+            const divContainer = document.createElement("div");
+            const divOtherData = document.createElement("div");
+            const CssDiv = document.createElement("div");
+
+            const DivTodoPost = document.createElement("div");
+            const divToDos = document.createElement("div");
+            const divPosts = document.createElement("div");
+
+            // User data Elelemens
+            const pId = document.createElement("button");
+            const pName = document.createElement("p");
+            const br = document.createElement("br");
+            const pEmail = document.createElement("p");
+
+            const inpName = document.createElement("input");
+            const inpEmail = document.createElement("input");
+
+            //Other Data button Elemens:
+            const pStreet = document.createElement("p");
+            const pCity = document.createElement("p");
+            const pZipCode = document.createElement("p");
+
+            const inpStreet = document.createElement("input");
+            const inpCity = document.createElement("input");
+            const inpZipCode = document.createElement("input");
+
+            // Buttons
+            const DataBtn = document.createElement("button");
+            const UpdateBtn = document.createElement("button");
+            const DeleteBtn = document.createElement("button");
+
+            // Set ID:
+            divContainer.id = "divContainer";
+            DivTodoPost.id = "DivTodoPost";
+            CssDiv.id = i;
+
+            CssDiv.className = "CssDiv";
+            // inserts values for search function:
+            const data = {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+            };
+            // CssDiv.innerText+=  JSON.stringify(data)
+            // CssDiv.append(JSON.stringify(data))
+
+            // CssDiv.setAttributeNS('data-value',(JSON.stringify(data)))
+            CssDiv.dataset.stellarRatio = JSON.stringify(data);
+
+            // _Insert values into the main user Data elements_
+            pId.innerText = `ID: ${user.id}`;
+            pName.innerText = "Name:";
+            pEmail.innerText = "Email:";
+
+            inpName.value = user.name;
+            inpEmail.value = user.email;
+
+            DataBtn.innerText = "Other Data";
+            UpdateBtn.innerText = "Update";
+            DeleteBtn.innerText = "Delete";
+
+            // _Insert values into the other Data  Elemens_
+            pStreet.innerText = "Street:";
+            pCity.innerText = "City:";
+            pZipCode.innerText = "Zip Code:";
+
+            inpStreet.value = user.address.street;
+            inpCity.value = user.address.city;
+            inpZipCode.value = user.address.zipcode;
+
+            // -Update button- function:
+            UpdateBtn.onclick = async () => {
+              const UserObj = {
+                name: inpName.value,
+                email: inpEmail.value,
+              };
+
+              const fetchParams = {
+                method: "PUT",
+                body: JSON.stringify(UserObj),
+                headers: { "Content-type": "application/json" },
+              };
+
+              const midData = await fetch(
+                `https://jsonplaceholder.typicode.com/users/${user.id}`,
+                fetchParams
+              );
+
+              const status = await midData.json();
+              console.log(status);
+            };
+
+            // -Delete Button- function:
+            DeleteBtn.onclick = async () => {
+              const fetchParams = {
+                method: "DELETE",
+                headers: { "Content-type": "application/json" },
+              };
+              fetch(
+                `https://jsonplaceholder.typicode.com/users/${user.id}`,
+                fetchParams
+              );
+              console.log("delete");
+            };
+
+            // -Other Data- function:
+            divOtherData.className = "HideDiv";
+
+            DataBtn.onmouseover = () => {
+              divOtherData.className = "ShowDiv";
+            };
+            DataBtn.onclick = () => {
+              divOtherData.className = "HideDiv";
+            };
+
+            // -Selecting User- function:
+            let flag = true;
+            pId.onclick = async () => {
+              //   TO-DOs:
+              const midData = await fetch(
+                `https://jsonplaceholder.typicode.com/users/${user.id}/todos`
+              );
+              if (midData.ok) {
+                const UserToDOs = await midData.json();
+
+                UserToDOs.slice(-3).forEach((todo) => {
+                  // ToDos:
+                  divToDos.innerText = "";
+                  const pTitle = document.createElement("p");
+                  const pComplited = document.createElement("p");
+                  pTitle.innerText = `Title: ${todo.title}`;
+                  pComplited.innerText = `Completed: ${todo.completed}`;
+
+                  divToDos.appendChild(pTitle);
+                  divToDos.appendChild(pComplited);
+                  if (!todo.completed) {
+                    const MarkBtn = document.createElement("button");
+                    MarkBtn.innerText = "Mark Completed";
+                    MarkBtn.onclick = async () => {
+                      const UserTodosObj = {
+                        completed: true,
+                      };
+
+                      const fetchParams = {
+                        method: "PUT",
+                        body: JSON.stringify(UserTodosObj),
+                        headers: { "Content-type": "application/json" },
+                      };
+
+                      const midData = await fetch(
+                        `https://jsonplaceholder.typicode.com/users/${user.id}/todos`,
+                        fetchParams
+                      );
+
+                      const status = await midData.json();
+                      console.log(status);
+                    };
+                    // divToDos.appendChild(MarkBtn);
+                    DivTodoPost.appendChild(MarkBtn);
+                  }
+                });
+              }
+
+              // // POSTS:
+              const midDataPost = await fetch(
+                `https://jsonplaceholder.typicode.com/users/${user.id}/posts`
+              );
+              if (midDataPost.ok) {
+                const UserPosts = await midDataPost.json();
+                UserPosts.slice(-2).forEach((post) => {
+                  // posts:
+                  divPosts.innerText = "";
+
+                  const postTitle = document.createElement("p");
+                  const pBody = document.createElement("p");
+
+                  postTitle.innerText = `Title: ${post.title}`;
+                  pBody.innerText = `Body: ${post.body}`;
+
+                  divPosts.appendChild(postTitle);
+                  divPosts.appendChild(pBody);
+                  DivTodoPost.appendChild(divPosts);
+                });
+              }
+              // Open&close
+              const Xbtn = document.createElement("button");
+              Xbtn.innerText = "X";
+              Xbtn.id = "Xbtn";
+              Xbtn.onclick = () => {
+                if (flag) {
+                  DivTodoPost.className = "divShow";
+                  flag = false;
+                } else {
+                  DivTodoPost.className = "divHide";
+                  flag = true;
+                }
+              };
+              DivTodoPost.appendChild(Xbtn);
+              if (flag) {
+                DivTodoPost.className = "divShow";
+                flag = false;
+              } else {
+                DivTodoPost.className = "divHide";
+                flag = true;
+              }
+            };
+
+            // _Present element to HTML_
+            // To main user data:
+            divContainer.appendChild(pId);
+            divContainer.appendChild(DataBtn);
+
+            divContainer.appendChild(pName);
+            divContainer.appendChild(inpName);
+            divContainer.appendChild(pEmail);
+            divContainer.appendChild(inpEmail);
+            divContainer.appendChild(br);
+
+            // To Other Data Div:
+            divOtherData.appendChild(pStreet);
+            divOtherData.appendChild(inpStreet);
+            divOtherData.appendChild(pCity);
+            divOtherData.appendChild(inpCity);
+            divOtherData.appendChild(pZipCode);
+            divOtherData.appendChild(inpZipCode);
+
+            //Buttons and Divs:
+            divContainer.appendChild(UpdateBtn);
+            divContainer.appendChild(DeleteBtn);
+
+            CssDiv.appendChild(divContainer);
+            CssDiv.appendChild(divOtherData);
+            CssDiv.appendChild(DivTodoPost);
+
+            mainContainer.appendChild(CssDiv);
+            i++;
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
